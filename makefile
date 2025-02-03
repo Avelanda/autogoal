@@ -94,7 +94,7 @@ container:
 # container         Run the base development image with GPU enabled.
 .PHONY: container-gpu
 container-gpu:
-	docker-compose run --service-ports --name=$(SERVICE)-gpu $(SERVICE)-gpu
+	docker run -it --name autogoal-core-gpu  --hostname autogoal-core-gpu -p 8500:8501 -p 8000:8000 -v "$(pwd):/home/coder/autogoal" -v "$HOME/.ssh:/home/coder/.ssh" -v "$HOME/.gitconfig:/home/coder/.gitconfig" --user 1000:1000 --gpus all autogoal/autogoal:core
 
 # container-sklearn  Run the development image with sklearn.
 .PHONY: container-sklearn

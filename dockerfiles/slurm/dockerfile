@@ -1,0 +1,99 @@
+# =====================
+# Python 3.9.16 core image with Slurm compatibility
+# ---------------------
+
+  FROM python:3.9.16
+
+  # =====================
+  # User arguments for Slurm compatibility
+  # ---------------------
+  ARG USER_ID=1000
+  ARG GROUP_ID=1000
+  ARG extras
+
+  
+  # =====================
+  # Basic environment setup
+  # ---------------------
+  ENV LANG=C.UTF-8
+  ENV LC_ALL=C.UTF-8
+  ARG DEBIAN_FRONTEND=noninteractive
+  
+  RUN apt-get update && apt-get install -y \
+      apt-utils \
+      curl \
+      locales \
+      nano \
+      ssh \
+      sudo \
+      bash \
+      git \
+      make \
+      gcc \
+      dos2unix \
+   && rm -rf /var/lib/apt/lists/*
+  
+  # =====================
+  # User configuration for Slurm
+  # ---------------------
+  RUN groupadd -g $GROUP_ID usergroup && \
+      useradd -m -u $USER_ID -g $GROUP_ID coder && \
+      mkdir -p /home/coder/autogoal && \
+      chown -R coder:usergroup /home/coder
+  
+  # =====================
+  # Environment setup
+  # ---------------------
+  RUN sed -i "s/# en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen \
+    && locale-gen
+  ENV LANG=en_US.UTF-8
+  ENV SHELL=/bin/bash
+  ENV BUILD_ENVIRONMENT="development"
+  ENV XDG_CACHE_HOME="/opt/dev/cache"
+  
+  # =====================
+  # Project setup
+  # ---------------------
+  WORKDIR /home/coder/autogoal
+  
+  COPY --chown=coder:usergroup makefile .
+  COPY --chown=coder:usergroup bash.bashrc /etc/
+  RUN sed -i 's/\r$//' /etc/bash.bashrc && chmod +x /etc/bash.bashrc
+  
+  # =====================
+  # Dependency management
+  # ---------------------
+  RUN pip install -U pip setuptools && \
+      pip install poetry==1.8.4 && \
+      poetry config virtualenvs.create false
+  
+  # =====================
+  # Codebase setup
+  # ---------------------
+  COPY --chown=coder:usergroup autogoal/ ./autogoal
+  COPY --chown=coder:usergroup autogoal-contrib/ ./autogoal-contrib
+  COPY --chown=coder:usergroup autogoal-remote/ ./autogoal-remote
+  COPY --chown=coder:usergroup scripts/ ./scripts
+  
+
+# =====================
+# Copy the installation script
+# ---------------------
+  COPY --chown=coder:usergroup dockerfiles/install-package.sh .
+
+  # =====================
+  # Final configurations
+  # ---------------------
+  # Convert line endings and verify script existence
+  RUN find . -type f -exec dos2unix {} \; && \
+      test -f install-package.sh && \
+      chmod +x install-package.sh && \
+      ./install-package.sh core
+
+  RUN ./install-package.sh $extras
+  
+  USER coder
+  VOLUME /home/coder/autogoal
+  
+  CMD ["/bin/bash"]
+  

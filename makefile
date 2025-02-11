@@ -39,6 +39,12 @@ clean:
 docker:
 	docker build . -t autogoal/autogoal:core -f dockerfiles/core/dockerfile --no-cache
 
+	
+# docker-base  Builds the development base image from scratch.
+.PHONY: docker-slurm
+docker:
+	docker build . -t autogoal/autogoal:slurm -f dockerfiles/slurm/dockerfile --build-arg extras="common sklearn nltk telegram transformers" --no-cache 
+
 # docker-contrib Builds the development image with target contrib from scratch. 
 .PHONY: docker-contrib
 docker-contrib:

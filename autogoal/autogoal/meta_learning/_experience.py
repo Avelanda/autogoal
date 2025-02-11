@@ -1,3 +1,4 @@
+from math import inf
 import os
 import json
 import re
@@ -171,6 +172,9 @@ class ExperienceStore:
                 
                 print("loading experiences for alias:", alias)    
                 
+                alias_exp_count = 0
+                alias_exp_pos_count = 0
+                alias_exp_neg_count = 0
                 # Traverse all date directories within the alias directory
                 for date_dir in alias_dir.iterdir():
                     if date_dir.is_dir():
@@ -193,4 +197,11 @@ class ExperienceStore:
                                 data = json.load(f)
                                 experience = Experience.from_dict(data)
                                 experiences.append(experience)
+                                alias_exp_count += 1
+                                
+                                if (experience.f1 is not None and experience.f1 != -inf):
+                                    alias_exp_pos_count += 1
+                                else:
+                                    alias_exp_neg_count += 1
+                print(f"loaded {alias_exp_count} experiences for alias {alias} ({alias_exp_pos_count} positive, {alias_exp_neg_count} negative)")
         return experiences

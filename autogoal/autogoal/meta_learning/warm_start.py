@@ -1,6 +1,6 @@
 from datetime import date
 import math
-from typing import Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union
 from autogoal.meta_learning._experience import Experience, ExperienceStore
 from autogoal.meta_learning.feature_extraction.text_classification import (
     TextClassificationFeatureExtractor,
@@ -99,6 +99,7 @@ class WarmStart:
         exclude: Optional[str] = None,
         # Debugging and Testing Parameters
         exit_after_warmup: bool = False,
+        on_warmup_exit: Optional[Callable[[Dict[str, float]], None]] = None,
     ):
         self._model: Dict = {}
         self.generator_fn = None
@@ -158,6 +159,7 @@ class WarmStart:
         self.include = include
         self.exclude = exclude
         self.exit_after_warmup = exit_after_warmup
+        self.on_warmup_exit = on_warmup_exit
 
     def pre_warm_up(self, X_train, y_train):
         """
@@ -242,30 +244,25 @@ class WarmStart:
         # Step 5: Adjust the internal probabilistic model
         self.adjust_model(alpha_experiences)
 
-        print("Model adjusted to:")
-        # pprint.pprint(self._model)
-
-        print("Learned experience for Finetuning Methods:")
-        print(
-            f'"FineTuneGenLLMClassifier": {self._model["FineTuneGenLLMClassifier"].value},'
-        )
-        print(f'"LoraGenLLMClassifier": {self._model["LoraGenLLMClassifier"].value},')
-        print(
-            f'"PartialFineTuneGenLLMClassifier": {self._model["PartialFineTuneGenLLMClassifier"].value},'
-        )
-        print(
-            f'"FineTuneLLMEmbeddingClassifier": {self._model["FineTuneLLMEmbeddingClassifier"].value},'
-        )
-        print(
-            f'"LoraLLMEmbeddingClassifier": {self._model["LoraLLMEmbeddingClassifier"].value},'
-        )
-        print(
-            f'"PartialFineTuneLLMEmbeddingClassifier": {self._model["PartialFineTuneLLMEmbeddingClassifier"].value}'
-        )
-
         if self.exit_after_warmup:
+            print("Exiting after warm-up.")
+            if self.on_warmup_exit:
+                print("Executing on exit callback")
+                self.on_warmup_exit(self._model)
+            else:
+                model_info = {
+                    "FineTuneGenLLMClassifier": self._model["FineTuneGenLLMClassifier"].value,
+                    "LoraGenLLMClassifier": self._model["LoraGenLLMClassifier"].value,
+                    "PartialFineTuneGenLLMClassifier": self._model["PartialFineTuneGenLLMClassifier"].value,
+                    "FineTuneLLMEmbeddingClassifier": self._model["FineTuneLLMEmbeddingClassifier"].value,
+                    "LoraLLMEmbeddingClassifier": self._model["LoraLLMEmbeddingClassifier"].value,
+                    "PartialFineTuneLLMEmbeddingClassifier": self._model["PartialFineTuneLLMEmbeddingClassifier"].value
+                }
+                import json
+                with open('test-output.json', 'w') as f:
+                    json.dump(model_info, f, indent=4)
+                    
             raise ValueError("Exiting after warm-up.")
-
         return self._model
 
     def _normalize_features(

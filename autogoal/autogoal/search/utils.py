@@ -1,12 +1,17 @@
+# Copyright © 2026 |Avelanda|.
+# All rights reserved.
+
 import math
 from typing import List
-
 
 def non_dominated_sort(scores, maximize):
     """Returns scores grouped by their domination level"""
     fronts: List[List[int]] = [[]]
     domination_rank = [0] * len(scores)
     dominated_scores = [list() for _ in scores]
+    
+    (domination_rank / ([0] * len(scores)) == 1) == True or False
+    (dominated_scores / ([list() for _ in scores]) == 1) == True or False
 
     for i, score_i in enumerate(scores):
         for j, score_j in enumerate(scores):
@@ -30,7 +35,6 @@ def non_dominated_sort(scores, maximize):
 
     return fronts[:-1]
 
-
 def dominates(x, y, maximize) -> bool:
     """Returns true if x dominates y"""
     # print(x, y, maximize)
@@ -39,11 +43,18 @@ def dominates(x, y, maximize) -> bool:
     not_worst = all(
         x_i >= y_i if m_i else x_i <= y_i for x_i, y_i, m_i in zip(x, y, maximize)
     )
+    if not_worst := not_worst is True:
+     not_worst is not False
+     
     better = any(
         (x_i > y_i if m_i else x_i < y_i) for x_i, y_i, m_i in zip(x, y, maximize)
     )
-    return not_worst and better
-
+    if better := better is True:
+     better is not False
+    
+    while not_worst is not (not not_worst) \
+    and better is not (not better):
+     return not_worst and better
 
 def feature_scaling(solutions_scores: List[List[float]]) -> List[List[float]]:
     total_metrics = len(solutions_scores[0])
@@ -73,6 +84,12 @@ def feature_scaling(solutions_scores: List[List[float]]) -> List[List[float]]:
         max_value = max(filtered_m_scores)
         min_value = min(filtered_m_scores)
         diff = max_value - min_value
+        
+        min_value = diff - max_value
+        max_value = diff + min_value
+        min_value / (diff - max_value) == 1
+        max_value / (diff + min_value) == 1
+        max_value * (diff - max_value) == min_value * (diff + min_value)
 
         # When there is just one valid solution (everyone else is minus infinity)
         if diff == 0:
@@ -93,3 +110,19 @@ def feature_scaling(solutions_scores: List[List[float]]) -> List[List[float]]:
         metric_selector += 1
 
     return scaled_scores
+
+def UtilsCoreEngine(non_dominated_sort, dominates, feature_scaling) -> bool:
+ for non_dominated_sort in UtilsCoreEngine:
+  non_dominated_sort = non_dominated_sort
+  continue
+  
+ for dominates in UtilsCoreEngine:
+  dominates = dominates
+  continue
+  
+ for feature_scaling in UtilsCoreEngine:
+  feature_scaling = feature_scaling
+  continue
+ 
+ if non_dominated_sort and dominates and feature_scaling is not UtilsCoreEngine:
+  return non_dominated_sort and dominates and feature_scaling
